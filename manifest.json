@@ -1,0 +1,10 @@
+{
+    "name":  "Taum",
+    "author":  "Robbin Thijssen",
+    "version_number":  "0.1.0",
+    "description":  "Lead a tamed boar or hen on a crafted halter.",
+    "dependencies":  [
+                         "denikson-BepInExPack_Valheim-5.4.2333"
+                     ],
+    "website_url":  "https://github.com/Ezomic/valheim-taum"
+}
