@@ -45,6 +45,9 @@ from vhbuild import *  # noqa: F401,F403
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PREVIEWS = os.path.join(ROOT, "assets", "previews")
 VARIANTS = os.path.join(ROOT, "assets", "variants")
+# Icons sit beside the DLL rather than with the rejected shapes: all four halters
+# ship, and an icon whose model is deployed has to be deployed with it.
+ASSETS = os.path.join(ROOT, "assets")
 
 RIPS = r"E:\Repositories\valheim\own-profile\BepInEx\rips"
 
@@ -320,15 +323,67 @@ def render_variant(key, build, collar=False):
            width=1200, height=700, bloom=False)
 
 
+def render_icon(key, build):
+    """
+    The inventory icon: orthographic, straight on, transparent, and lit for itself.
+
+    Not a crop of the preview. The preview stands the halter on a ground plane under a sun
+    angled for a silhouette at three metres, and both of those are wrong at 128 pixels - the
+    ground shows up as a grey bar and the shading that reads as form at eye height reads as
+    mud in a grid square. So this is its own pass with its own exposure.
+
+    128 and not 64. Valheim's own item icons are drawn well above their nominal size and a
+    64px source is visibly soft next to them in the crafting list.
+    """
+    clear_scene()
+    halter = build()
+
+    # Square on and slightly above, the angle vanilla draws tools and tack at.
+    halter.rotation_euler = (0.0, 0.0, 0.0)
+    tint()
+
+    scene = bpy.context.scene
+    scene.render.film_transparent = True
+
+    key_light = bpy.data.lights.new("icon_key", type="AREA")
+    key_light.energy = 55.0
+    key_light.size = 1.4
+    holder = bpy.data.objects.new("icon_key", key_light)
+    holder.location = (0.9, -1.5, 1.2)
+    holder.rotation_euler = (0.95, 0.0, 0.55)
+    bpy.context.collection.objects.link(holder)
+
+    fill_light = bpy.data.lights.new("icon_fill", type="AREA")
+    fill_light.energy = 14.0
+    fill_light.size = 2.2
+    fill = bpy.data.objects.new("icon_fill", fill_light)
+    fill.location = (-1.3, -1.1, 0.5)
+    fill.rotation_euler = (1.35, 0.0, -0.85)
+    bpy.context.collection.objects.link(fill)
+
+    camera((0.0, -2.2, 0.35), (0.0, 0.0, 0.35), lens=50)
+    bpy.context.scene.camera.data.type = "ORTHO"
+    bpy.context.scene.camera.data.ortho_scale = 0.55
+
+    render(os.path.join(ASSETS, "halter_%s_icon.png" % key.lower()),
+           width=128, height=128, bloom=False)
+
+    # Film transparency is scene state and the next preview in this run inherits it - which
+    # comes out with a white void where the sky should be and reads as a blown exposure.
+    scene.render.film_transparent = False
+
+
 def main():
     os.makedirs(PREVIEWS, exist_ok=True)
     os.makedirs(VARIANTS, exist_ok=True)
+    os.makedirs(ASSETS, exist_ok=True)
 
     for key, build, collar in (("A", variant_a, False),
                                ("B", variant_b, False),
                                ("C", variant_c, False),
                                ("D", variant_d, True)):
         render_variant(key, build, collar)
+        render_icon(key, build)
 
     print("\nRenders in %s" % PREVIEWS)
 

@@ -2,7 +2,7 @@
     "name":  "Taum",
     "author":  "Robbin Thijssen",
     "version_number":  "0.1.0",
-    "description":  "Lead a tamed boar or hen on a crafted halter.",
+    "description":  "Lead your tamed boar and hens on a halter. They follow; nothing else changes.",
     "dependencies":  [
                          "denikson-BepInExPack_Valheim-5.4.2333"
                      ],

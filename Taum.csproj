@@ -53,6 +53,10 @@
     -->
     <Reference Include="assembly_valheim"><HintPath>$(ManagedDir)\assembly_valheim.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="assembly_utils"><HintPath>$(ManagedDir)\assembly_utils.dll</HintPath><Private>false</Private></Reference>
+    <!-- Localization lives here, not in assembly_valheim - which is where you look first
+         and do not find it. Localize("$KEY_Use") is what lets hover text name the key the
+         player has actually bound instead of insisting on E. -->
+    <Reference Include="assembly_guiutils"><HintPath>$(ManagedDir)\assembly_guiutils.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine"><HintPath>$(ManagedDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(ManagedDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="BepInEx"><HintPath>$(BepInExCore)\BepInEx.dll</HintPath><Private>false</Private></Reference>
@@ -69,14 +73,25 @@
   </ItemGroup>
 
   <!--
-    Assets, if the mod has any. Uncomment and drop .obj / .col / .png into assets\; load them
-    relative to Path.GetDirectoryName(typeof(X).Assembly.Location). Rejected design variants
-    belong in assets\variants\ so they are not copied - that folder is not matched here.
+    All four halters ship. They are not four skins of one shape - a rope halter and an iron
+    bridle disagree about what kind of husbandry this is - so which one is worn is a line in
+    the .cfg rather than a rebuild, and a shape is only rejected once somebody has stood next
+    to a boar wearing it.
+
+    The variants folder is deliberately not matched: that is where the design script writes, and
+    a shape earns its place beside the DLL by being moved up a folder.
+  -->
+  <ItemGroup>
+    <!-- Shared source, not a reference. Prefabs.cs is the suite's runtime prefab registry and
+         lives in the core repo, but it is deliberately not in EzomicCore.dll: Core is a soft
+         dependency, and a mod that could not register its prefab would load and do nothing at
+         all. Linking the file keeps one copy of the code without making Core mandatory. -->
+    <Compile Include="..\core\shared\Prefabs.cs" Link="shared\Prefabs.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <TaumAsset Include="assets\*.obj;assets\*.col;assets\*.png" />
   </ItemGroup>
-  -->
 
   <!--
     ContinueOnError, because the game holds the DLL open while it is running and a failed
@@ -87,7 +102,7 @@
   <Target Name="Deploy" AfterTargets="Build" Condition="Exists('$(ProfileDir)\BepInEx\plugins')">
     <MakeDir Directories="$(DeployDir)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DeployDir)" ContinueOnError="true" />
-    <!-- <Copy SourceFiles="@(TaumAsset)" DestinationFolder="$(DeployDir)" ContinueOnError="true" /> -->
+    <Copy SourceFiles="@(TaumAsset)" DestinationFolder="$(DeployDir)" ContinueOnError="true" />
   </Target>
 
 </Project>

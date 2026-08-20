@@ -40,6 +40,21 @@ namespace Taum
 
         internal static ManualLogSource Log;
 
+        /// <summary>Warnings that would otherwise repeat once per animal, per frame.</summary>
+        private static readonly System.Collections.Generic.HashSet<string> Said =
+            new System.Collections.Generic.HashSet<string>();
+
+        /// <summary>
+        /// Say it the first time and never again. Most of the warnings in this mod sit
+        /// inside something that runs per animal or per frame, and a log that repeats a
+        /// true statement four thousand times is a log nobody reads.
+        /// </summary>
+        internal static void LogOnce(string message)
+        {
+            if (Log == null || !Said.Add(message)) return;
+            Log.LogWarning(message);
+        }
+
         /// <summary>
         /// Whether Core answered at load. Worth keeping even when nothing reads it yet: the
         /// difference between gated and ungated is invisible to a player otherwise, and this
@@ -59,6 +74,10 @@ namespace Taum
             // worth relying on.
             TaumConfig.Bind(Config);
 
+            // So a line about a prefab is attributed to Taum rather than to a shared name
+            // that says nothing about which of five mods is talking.
+            Ezomic.Shared.Prefabs.Log = Logger;
+
             TryRegisterWithCore();
 
             // PatchAll over a named type, never the whole assembly. A bare PatchAll() walks
@@ -66,6 +85,13 @@ namespace Taum
             // the moment it compiles.
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(TaumPatches));
+            _harmony.PatchAll(typeof(Leading));
+            _harmony.PatchAll(typeof(Worlds));
+
+            // Ask for the item prefab. Nothing is built yet - ZNetScene and ObjectDB do not
+            // exist at load - and the keeper is what asks again every frame until they do,
+            // and again for every world after that.
+            Halter.Keep();
 
             // The startup line every mod in the suite writes. It is how a log answers "which
             // build of what is actually loaded" without anyone guessing.
@@ -125,6 +151,22 @@ namespace Taum
             // same build over different text unless it is told.
             //
             //     Suite.Data(File.ReadAllText(path));
+        }
+
+        /// <summary>
+        /// The keeper's heartbeat, and the recipe beside it.
+        ///
+        /// There is no event that could replace this. ZNetScene and ObjectDB are built after
+        /// the plugin loads and are rebuilt for every world, including a trip out to the menu
+        /// and back, so there is no single moment to hook - only a question worth asking
+        /// cheaply and often. Both calls return on a dictionary lookup once satisfied.
+        /// </summary>
+        private void Update()
+        {
+            if (!TaumConfig.Enabled.Value) return;
+
+            Ezomic.Shared.Prefabs.Tick();
+            Halter.KeepRecipe();
         }
 
         private void OnDestroy()
