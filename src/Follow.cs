@@ -57,7 +57,13 @@ namespace Taum
         }
 
         /// <summary>
-        /// Say the gesture exists, or nobody finds it. $KEY_Use renders the bound key.
+        /// Say the gesture exists, or nobody finds it.
+        ///
+        /// Localized HERE, not left to the caller: vanilla localizes inside
+        /// GetHoverText and returns finished text, so anything a postfix appends is
+        /// shown verbatim - the first cut printed a literal "$KEY_Use" in the hover.
+        /// The modifier drops its Left/Right prefix for display only; the config
+        /// value stays the exact KeyCode.
         /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Tameable), "GetHoverText")]
@@ -65,8 +71,11 @@ namespace Taum
         {
             if (!Wants(__instance) || string.IsNullOrEmpty(__result)) return;
 
-            __result += "\n[<color=yellow><b>" + TaumConfig.FollowKey.Value
-                + " + $KEY_Use</b></color>] Follow / stay";
+            var key = TaumConfig.FollowKey.Value.ToString()
+                .Replace("Left", "").Replace("Right", "");
+
+            __result += Localization.instance.Localize(
+                "\n[<color=yellow><b>" + key + " + $KEY_Use</b></color>] Follow / stay");
         }
     }
 }
