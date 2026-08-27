@@ -3,6 +3,18 @@
 Notable changes to Taum. Format follows [Keep a Changelog](https://keepachangelog.com), and
 the mod uses [semantic versioning](https://semver.org).
 
+## [1.0.0] - 2026-08-27
+
+The first published version, and a different mod from the one 0.1.0 sketched. The halter -
+a crafted item, a worn model, a lead - was cut whole to the `halter` branch on his call,
+and what ships is one gesture: **Alt+E on a tamed boar or hen toggles follow/stay**,
+through vanilla's own Tameable.Command - the same follow the wolves have, gated only by a
+flag the farm animals lack. E still pets, Shift+E still renames; all three gestures keep
+their own key, and the modifier is config (FollowKey).
+
+Confirmed in play: the follow, the hover line, and follow surviving a relog - which is
+vanilla's own ZDO behaviour, kept.
+
 ## [0.1.0] - unreleased
 
 First version. **Built, and not yet run in game** - everything below compiles and deploys,
