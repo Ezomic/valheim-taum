@@ -2,7 +2,7 @@
     "name":  "Taum",
     "author":  "Robbin Thijssen",
     "version_number":  "0.1.0",
-    "description":  "Lead your tamed boar and hens on a halter. They follow; nothing else changes.",
+    "description": "Farm animals follow: hold E on a tamed boar or hen and it walks with you; hold again and it stays.",
     "dependencies":  [
                          "denikson-BepInExPack_Valheim-5.4.2333"
                      ],

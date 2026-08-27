@@ -85,13 +85,7 @@ namespace Taum
             // the moment it compiles.
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(TaumPatches));
-            _harmony.PatchAll(typeof(Leading));
-            _harmony.PatchAll(typeof(Worlds));
-
-            // Ask for the item prefab. Nothing is built yet - ZNetScene and ObjectDB do not
-            // exist at load - and the keeper is what asks again every frame until they do,
-            // and again for every world after that.
-            Halter.Keep();
+            _harmony.PatchAll(typeof(Follow));
 
             // The startup line every mod in the suite writes. It is how a log answers "which
             // build of what is actually loaded" without anyone guessing.
@@ -166,7 +160,6 @@ namespace Taum
             if (!TaumConfig.Enabled.Value) return;
 
             Ezomic.Shared.Prefabs.Tick();
-            Halter.KeepRecipe();
         }
 
         private void OnDestroy()
