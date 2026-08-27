@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BepInEx.Configuration;
+using UnityEngine;
 
 namespace Taum
 {
@@ -19,6 +20,7 @@ namespace Taum
     {
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<bool> Verbose;
+        internal static ConfigEntry<UnityEngine.KeyCode> FollowKey;
 
         internal static void Bind(ConfigFile cfg)
         {
@@ -30,6 +32,11 @@ namespace Taum
 
             Verbose = cfg.Bind("Taum", "Verbose", false,
                 "Write each halter put on, taken off and dropped to BepInEx/LogOutput.log.");
+
+            FollowKey = cfg.Bind("Taum", "FollowKey", KeyCode.LeftAlt,
+                "Held with E on a tamed boar or hen to toggle follow/stay. Alt because "
+                + "vanilla already spends Shift+E on renaming and plain E on petting - "
+                + "all three gestures keep their own key.");
 
             // ------------------------------------------------------------------ the item
 
