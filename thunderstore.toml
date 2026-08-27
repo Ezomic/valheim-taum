@@ -7,8 +7,8 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Ezomic"
 name = "Taum"
-versionNumber = "0.1.0"
-description = "Lead your tamed boar and hens on a halter. They follow; nothing else changes."
+versionNumber = "1.0.0"
+description = "Farm animals follow: Alt+E on a tamed boar or hen and it walks with you; Alt+E again and it stays."
 websiteUrl = "https://github.com/Ezomic/valheim-taum"
 containsNsfwContent = false
 
