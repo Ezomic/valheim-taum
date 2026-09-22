@@ -1,0 +1,10 @@
+{
+    "roadmap": [
+        {
+            "key": "animals-through-portals",
+            "title": "A haltered animal follows you through a portal",
+            "status": "planned",
+            "body": "Vanilla leaves every tamed animal on the wrong side of a portal, and that is the one place leading one stops being worth doing. A boar will walk anywhere you like; it is the walk home that turns a pen into a project.\n\nSo a haltered animal goes through with you, and only a haltered one. The limit stays what it already is - how many halters you are carrying - rather than a number in a config file, so the gesture is the same one the mod is about and nothing new has to be learned.\n\nThis is the one place Taum gets wider rather than narrower, and that is worth saying out loud because the rest of the mod is deliberately the other way. Leading animals was never meant to solve transport; the halter exists so a short move is a short move. A portal makes it a long move that costs nothing, and whether that is too much is the question this line is still open on.\n\nIt does not touch the ore rule. Metal still cannot go through a portal, and an animal carrying nothing is not a loophole in that. It is also not the whole-pen gesture, which stays held back: you take what you are leading."
+        }
+    ]
+}
