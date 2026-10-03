@@ -9,6 +9,8 @@ follow/stay command wolves and lox already have, opened up for the animals that 
   that is boars and hens.
 - The animal's hover text gains a `[Alt + E] Follow / stay` line, using whichever key you have
   bound to Use and whichever modifier is set in the config.
+- Above that line the hover says `Following you` or `Staying`, read from the state the game keeps
+  on the animal, so you know what the next press will do.
 - E still pets and Shift+E still renames. All three gestures keep their own key.
 - Follow state is stored by the game on the animal, so it survives a relog and other players
   see it.
