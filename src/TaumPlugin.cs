@@ -86,6 +86,7 @@ namespace Taum
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(TaumPatches));
             _harmony.PatchAll(typeof(Follow));
+            _harmony.PatchAll(typeof(Portal));
 
             // The startup line every mod in the suite writes. It is how a log answers "which
             // build of what is actually loaded" without anyone guessing.

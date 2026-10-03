@@ -21,6 +21,8 @@ namespace Taum
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<bool> Verbose;
         internal static ConfigEntry<UnityEngine.KeyCode> FollowKey;
+        internal static ConfigEntry<bool> FollowThroughPortals;
+        internal static ConfigEntry<int> PortalMax;
 
         internal static void Bind(ConfigFile cfg)
         {
@@ -37,6 +39,20 @@ namespace Taum
                 "Held with E on a tamed boar or hen to toggle follow/stay. Alt because "
                 + "vanilla already spends Shift+E on renaming and plain E on petting - "
                 + "all three gestures keep their own key.");
+
+            FollowThroughPortals = cfg.Bind("Portals", "FollowThroughPortals", true,
+                "An animal you told to follow (Alt+E) goes through a portal with you; one left "
+                + "staying does not. Off leaves every animal on the wrong side, as vanilla does. "
+                + "This is the one place Taum makes following wider rather than narrower: a walk "
+                + "that costs a pen becomes one that costs nothing. It never carries metal "
+                + "through, since a portal still refuses you with ore in your pack and an animal "
+                + "carries nothing.");
+
+            PortalMax = cfg.Bind("Portals", "PortalMax", 3,
+                new ConfigDescription(
+                    "Most animals that go through with you in one portal trip, nearest first. "
+                    + "The rest keep following and stay where they were. 0 sends none.",
+                    new AcceptableValueRange<int>(0, 20)));
 
             // ------------------------------------------------------------------ the item
 

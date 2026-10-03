@@ -31,7 +31,7 @@ namespace Taum
     [HarmonyPatch]
     internal static class Follow
     {
-        private static bool Wants(Tameable tameable)
+        internal static bool Wants(Tameable tameable)
         {
             if (!TaumConfig.Enabled.Value || tameable == null) return false;
             if (!tameable.IsTamed()) return false;

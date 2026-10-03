@@ -3,6 +3,18 @@
 Notable changes to Taum. Format follows [Keep a Changelog](https://keepachangelog.com), and
 the mod uses [semantic versioning](https://semver.org).
 
+## [Unreleased]
+
+### Added
+
+- An animal you told to follow (Alt+E) now goes through a portal with you; one left staying does
+  not. Only boars and hens, the animals Taum commands, and only those following you within 25 m.
+  The trip is remembered when the portal fires and the animals are put down in front of you once
+  the game says you have landed, because the old zone is gone and the new one not yet loaded in
+  between. Two new settings under `[Portals]`: `FollowThroughPortals` (default `true`) and
+  `PortalMax` (default 3, nearest first). The ore rule is untouched: the game still refuses the
+  portal to you with metal in your pack, and no trip starts then. Not run in game yet.
+
 ## [1.0.1] - 2026-09-12
 
 ### Changed
