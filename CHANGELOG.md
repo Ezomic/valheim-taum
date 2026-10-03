@@ -14,6 +14,17 @@ the mod uses [semantic versioning](https://semver.org).
   between. Two new settings under `[Portals]`: `FollowThroughPortals` (default `true`) and
   `PortalMax` (default 3, nearest first). The ore rule is untouched: the game still refuses the
   portal to you with metal in your pack, and no trip starts then. Not run in game yet.
+  Tamed wolves and lox that follow you are not carried, on purpose.
+
+### Fixed
+
+- A portal trip no longer claims success for animals that stayed. When another player stood near
+  the old portal the server handed them the animal, the move carried stale revisions and was
+  dropped without a word. Each animal is now checked a moment after the move and counted only if
+  it arrived; one owned by another player is placed by a routed `Taum_Place` message to its
+  owner, and the log reports how many made it.
+- The two portal patches catch their own errors and log them once, so a failure costs the
+  animals and never the teleport.
 
 ## [1.0.1] - 2026-09-12
 

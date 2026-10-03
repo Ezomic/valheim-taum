@@ -45,8 +45,14 @@ until the ground has loaded. The old zone is let go of meanwhile, so the animals
 when the portal fires. Taum remembers which were following and moves them, by their saved state,
 at the moment the game says you have landed. They then follow you again on their own.
 
+Another player standing near the old portal can briefly own an animal, and the game drops a move
+written by someone who does not own it. So Taum checks a moment later that each animal is where it
+was sent, asks its current owner to place it if not, and logs only the animals that arrived.
+
 This is the one place Taum makes following wider rather than narrower, which is why it can be
-turned off. The ore rule is unchanged: the game refuses the portal when you carry metal, so no
+turned off. Tamed wolves and lox that follow you are not carried, as a deliberate limit: they use
+the game's own follow command rather than Alt+E, and Taum leaves those animals to vanilla. The
+ore rule is unchanged: the game refuses the portal when you carry metal, so no
 trip starts, and an animal carries nothing.
 
 ## Installation

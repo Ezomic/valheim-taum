@@ -41,8 +41,10 @@ namespace Taum
                 + "all three gestures keep their own key.");
 
             FollowThroughPortals = cfg.Bind("Portals", "FollowThroughPortals", true,
-                "An animal you told to follow (Alt+E) goes through a portal with you; one left "
-                + "staying does not. Off leaves every animal on the wrong side, as vanilla does. "
+                "A boar or hen you told to follow (Alt+E) goes through a portal with you; one left "
+                + "staying does not. Tamed wolves and lox that follow you are NOT carried: "
+                + "they use the game's own follow command, not Alt+E, and that is a deliberate "
+                + "limit of this setting. Off leaves every animal on the wrong side, as vanilla does. "
                 + "This is the one place Taum makes following wider rather than narrower: a walk "
                 + "that costs a pen becomes one that costs nothing. It never carries metal "
                 + "through, since a portal still refuses you with ore in your pack and an animal "

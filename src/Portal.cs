@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
@@ -23,11 +25,19 @@ namespace Taum
     /// instantiates it there from its saved state, and Tameable.UpdateSavedFollowTarget then
     /// finds the "follow" name in that ZDO and has it follow you again by itself.
     ///
-    /// **Ownership.** A write to a ZDO you do not own is discarded, so the ZDO is claimed
-    /// first, the same call ZNetView.ClaimOwnership makes. That is a claim, not a lock: if
-    /// another player's machine owns the animal it is a race for the owner revision, and the
-    /// higher one wins. A rider-less boar near its leader is nearly always owned by the leader,
-    /// which is why this is accepted and not routed through an RPC to the old owner.
+    /// **Ownership, and why landing is checked.** A write to a ZDO you do not own is
+    /// discarded, so the ZDO is claimed first, the same call ZNetView.ClaimOwnership makes. A
+    /// claim is not a lock, and the claim alone is not enough: every two seconds the server's
+    /// ZDOMan.ReleaseNearbyZDOS hands an animal to whichever player is near it, and the
+    /// leader's reference position is now far away. If another player is standing at the old
+    /// portal, their machine owns the animal and keeps writing it from the old spot, while the
+    /// leader's SetOwner and SetPosition carry stale revisions. RPC_ZDOData accepts a packet
+    /// only when its data revision beats the server's, so the move is dropped without a word
+    /// and the animal stays. So a short while after the move each animal is checked: standing
+    /// near its spot means it took, and only those are counted. By then the server's newer
+    /// data has overwritten a lost write locally, so the position read is the truth. An animal
+    /// owned by someone else is not written to at all; the placement is routed to its owner,
+    /// who is the only machine whose write counts (the Taum_Place message below).
     ///
     /// **The ore rule is not touched.** This only watches portals the game has already let the
     /// player into: if Player.IsTeleportable refuses, no teleport starts, and the trip never
@@ -51,6 +61,20 @@ namespace Taum
         /// </summary>
         private const float Patience = 60f;
 
+        /// <summary>
+        /// How long after a move before an animal is checked, and how many checks. The owner
+        /// change and the position travel through the server, so the first look has to wait a
+        /// round trip; three looks cover a slow link without keeping the trip alive for long.
+        /// </summary>
+        private const float CheckEvery = 1.5f;
+
+        private const int Checks = 3;
+
+        /// <summary>How close to its spot an animal must be to count as having arrived.</summary>
+        private const float Landed = 6f;
+
+        private const string PlaceRpc = "Taum_Place";
+
         private static List<ZDOID> _trip;
         private static float _started;
 
@@ -67,15 +91,24 @@ namespace Taum
         {
             // Teleport returns void and refuses in several ways, each ending in a message and
             // no teleport. A teleport that actually began is the one fact they share.
-            if (__state || player == null || player != Player.m_localPlayer) return;
-            if (!player.IsTeleporting()) return;
-            if (!TaumConfig.Enabled.Value || !TaumConfig.FollowThroughPortals.Value) return;
+            try
+            {
+                if (__state || player == null || player != Player.m_localPlayer) return;
+                if (!player.IsTeleporting()) return;
+                if (!TaumConfig.Enabled.Value || !TaumConfig.FollowThroughPortals.Value) return;
 
-            _trip = Followers(player);
-            _started = Time.time;
+                _trip = Followers(player);
+                _started = Time.time;
 
-            if (TaumConfig.Verbose.Value)
-                TaumPlugin.Log.LogInfo("Portal: " + _trip.Count + " following animal(s) will come through.");
+                if (TaumConfig.Verbose.Value)
+                    TaumPlugin.Log.LogInfo("Portal: " + _trip.Count + " following animal(s) will come through.");
+            }
+            catch (Exception e)
+            {
+                // A failure here costs the animals, never the teleport the player asked for.
+                _trip = null;
+                TaumPlugin.LogOnce("Portal: could not note the following animals, so none will come through: " + e);
+            }
         }
 
         [HarmonyPrefix]
@@ -89,15 +122,61 @@ namespace Taum
         [HarmonyPatch(typeof(Player), "UpdateTeleport")]
         private static void Landing(Player __instance, bool __state)
         {
-            if (!__state || __instance.IsTeleporting()) return;
-            if (__instance != Player.m_localPlayer || _trip == null) return;
+            try
+            {
+                if (!__state || __instance.IsTeleporting()) return;
+                if (__instance != Player.m_localPlayer || _trip == null) return;
 
-            var trip = _trip;
-            _trip = null;
+                var trip = _trip;
+                _trip = null;
 
-            if (Time.time - _started > Patience) return;
+                if (Time.time - _started > Patience) return;
 
-            Put(__instance, trip);
+                Put(__instance, trip);
+            }
+            catch (Exception e)
+            {
+                _trip = null;
+                TaumPlugin.LogOnce("Portal: could not put the following animals down, so they stayed behind: " + e);
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ZNet), "Awake")]
+        private static void Wire()
+        {
+            // A fresh ZRoutedRpc is built with every ZNet, so the registration is too. A peer
+            // without Taum has no handler for the name and drops the message.
+            try
+            {
+                if (ZRoutedRpc.instance != null)
+                    ZRoutedRpc.instance.Register<ZDOID, Vector3>(PlaceRpc, RPC_Place);
+            }
+            catch (Exception e)
+            {
+                TaumPlugin.LogOnce("Portal: could not register the placement message, so animals owned by other players will stay behind: " + e);
+            }
+        }
+
+        /// <summary>
+        /// Runs on the machine that owns the animal, which is the only one whose write to it
+        /// counts. Refuses anything that is not an animal someone told to follow, so the
+        /// message is not a way to move arbitrary objects.
+        /// </summary>
+        private static void RPC_Place(long sender, ZDOID id, Vector3 spot)
+        {
+            try
+            {
+                var zdo = ZDOMan.instance.GetZDO(id);
+                if (zdo == null || !zdo.IsOwner()) return;
+                if (zdo.GetString(ZDOVars.s_follow, "") == "") return;
+
+                Place(zdo, spot);
+            }
+            catch (Exception e)
+            {
+                TaumPlugin.LogOnce("Portal: could not place an animal on request: " + e);
+            }
         }
 
         private static List<ZDOID> Followers(Player player)
@@ -141,10 +220,14 @@ namespace Taum
         private static void Put(Player player, List<ZDOID> trip)
         {
             var origin = player.transform.position;
-            var moved = 0;
+            var pending = new Dictionary<ZDOID, Vector3>();
 
             for (var i = 0; i < trip.Count; i++)
             {
+                var side = (i + 1) / 2 * 40f * (i % 2 == 1 ? 1f : -1f);
+                var spot = origin + Quaternion.Euler(0f, side, 0f) * player.transform.forward * 2.5f
+                           + Vector3.up * 0.5f;
+
                 var zdo = ZDOMan.instance.GetZDO(trip[i]);
                 if (zdo == null)
                 {
@@ -152,23 +235,93 @@ namespace Taum
                     continue;
                 }
 
-                var side = (i + 1) / 2 * 40f * (i % 2 == 1 ? 1f : -1f);
-                var spot = origin + Quaternion.Euler(0f, side, 0f) * player.transform.forward * 2.5f
-                           + Vector3.up * 0.5f;
-
-                zdo.SetOwner(ZDOMan.GetSessionID());
-                zdo.SetPosition(spot);
-
-                // If the animal is still loaded (a short hop), move the object too, or its own
-                // ZSyncTransform writes the old position straight back over the ZDO.
-                var instance = ZNetScene.instance.FindInstance(zdo);
-                if (instance != null) instance.transform.position = spot;
-
-                moved++;
+                pending[trip[i]] = spot;
+                Move(zdo, spot);
             }
 
+            if (pending.Count == 0 || TaumPlugin.Instance == null) return;
+
+            TaumPlugin.Instance.StartCoroutine(Verify(pending, trip.Count));
+        }
+
+        /// <summary>
+        /// Writes the move here when this machine owns the animal or nobody does, and asks the
+        /// owner to when somebody else does. A write to an animal another player owns is
+        /// discarded by the server, so making it would only look like it worked.
+        /// </summary>
+        private static void Move(ZDO zdo, Vector3 spot)
+        {
+            var owner = zdo.GetOwner();
+            if (!zdo.HasOwner() || owner == ZDOMan.GetSessionID())
+            {
+                zdo.SetOwner(ZDOMan.GetSessionID());
+                Place(zdo, spot);
+                return;
+            }
+
+            ZRoutedRpc.instance.InvokeRoutedRPC(owner, PlaceRpc, zdo.m_uid, spot);
+        }
+
+        private static void Place(ZDO zdo, Vector3 spot)
+        {
+            zdo.SetPosition(spot);
+
+            // If the animal is still loaded (a short hop), move the object too, or its own
+            // ZSyncTransform writes the old position straight back over the ZDO.
+            var instance = ZNetScene.instance.FindInstance(zdo);
+            if (instance != null) instance.transform.position = spot;
+        }
+
+        /// <summary>
+        /// Looks a moment later, and again, at whether each animal is where it was sent. A
+        /// move that lost the revision race leaves no error anywhere, so this is the only
+        /// place the failure can be seen. An animal that took is counted; one that did not is
+        /// tried again against whoever owns it now, and the last look says how many made it.
+        /// </summary>
+        private static IEnumerator Verify(Dictionary<ZDOID, Vector3> pending, int asked)
+        {
+            var took = 0;
+
+            for (var look = 0; look < Checks && pending.Count > 0; look++)
+            {
+                yield return new WaitForSeconds(CheckEvery);
+
+                try
+                {
+                    var done = new List<ZDOID>();
+                    foreach (var entry in pending)
+                    {
+                        var zdo = ZDOMan.instance.GetZDO(entry.Key);
+                        if (zdo == null)
+                        {
+                            done.Add(entry.Key);
+                            continue;
+                        }
+
+                        if (Vector3.Distance(zdo.GetPosition(), entry.Value) <= Landed)
+                        {
+                            took++;
+                            done.Add(entry.Key);
+                            continue;
+                        }
+
+                        if (look < Checks - 1) Move(zdo, entry.Value);
+                    }
+
+                    foreach (var id in done) pending.Remove(id);
+                }
+                catch (Exception e)
+                {
+                    TaumPlugin.LogOnce("Portal: could not check the animals after the move: " + e);
+                    yield break;
+                }
+            }
+
+            if (pending.Count > 0)
+                TaumPlugin.LogOnce("Portal: " + pending.Count + " animal(s) did not follow through the portal; another player's machine kept them.");
+
             if (TaumConfig.Verbose.Value)
-                TaumPlugin.Log.LogInfo("Portal: put " + moved + " of " + trip.Count + " animal(s) down beside you.");
+                TaumPlugin.Log.LogInfo("Portal: " + took + " of " + asked + " animal(s) are down beside you.");
         }
     }
 }

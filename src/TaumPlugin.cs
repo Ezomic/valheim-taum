@@ -39,6 +39,7 @@ namespace Taum
         private const string CoreGuid = "ezomic.valheim.core";
 
         internal static ManualLogSource Log;
+        internal static TaumPlugin Instance;
 
         /// <summary>Warnings that would otherwise repeat once per animal, per frame.</summary>
         private static readonly System.Collections.Generic.HashSet<string> Said =
@@ -67,6 +68,7 @@ namespace Taum
         private void Awake()
         {
             Log = Logger;
+            Instance = this;
 
             // Config first. Registering absorbs every entry the mod has bound, so anything
             // bound after this line is carried only because Core re-absorbs at manifest
