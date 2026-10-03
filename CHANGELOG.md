@@ -3,6 +3,14 @@
 Notable changes to Taum. Format follows [Keep a Changelog](https://keepachangelog.com), and
 the mod uses [semantic versioning](https://semver.org).
 
+## Unreleased
+
+### Added
+
+- **The follow modifier is on Core's Settings page (LHM-51)**, the page in the compendium that lists
+  a player's own settings and rebinds a key by pressing it. Without Core nothing changes. Built, not run
+  in game.
+
 ## [1.0.1] - 2026-09-12
 
 ### Changed
