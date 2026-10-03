@@ -11,6 +11,24 @@ the mod uses [semantic versioning](https://semver.org).
   Alt+E line, so you know what a press will do. It reads the animal's own follow state from the
   game (the ZDO field vanilla's Command writes), so it is right on a server for everyone, and the
   mod keeps no copy of it. Not run in game yet.
+- An animal you told to follow (Alt+E) now goes through a portal with you; one left staying does
+  not. Only boars and hens, the animals Taum commands, and only those following you within 25 m.
+  The trip is remembered when the portal fires and the animals are put down in front of you once
+  the game says you have landed, because the old zone is gone and the new one not yet loaded in
+  between. Two new settings under `[Portals]`: `FollowThroughPortals` (default `true`) and
+  `PortalMax` (default 3, nearest first). The ore rule is untouched: the game still refuses the
+  portal to you with metal in your pack, and no trip starts then. Not run in game yet.
+  Tamed wolves and lox that follow you are not carried, on purpose.
+
+### Fixed
+
+- A portal trip no longer claims success for animals that stayed. When another player stood near
+  the old portal the server handed them the animal, the move carried stale revisions and was
+  dropped without a word. Each animal is now checked a moment after the move and counted only if
+  it arrived; one owned by another player is placed by a routed `Taum_Place` message to its
+  owner, and the log reports how many made it.
+- The two portal patches catch their own errors and log them once, so a failure costs the
+  animals and never the teleport.
 
 ## [1.0.1] - 2026-09-12
 

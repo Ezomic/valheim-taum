@@ -14,6 +14,8 @@ follow/stay command wolves and lox already have, opened up for the animals that 
 - E still pets and Shift+E still renames. All three gestures keep their own key.
 - Follow state is stored by the game on the animal, so it survives a relog and other players
   see it.
+- An animal that is following you goes through a portal with you. One left staying does not. See
+  Portals below.
 - No new items, recipes or prefabs. One DLL, no assets, no asset bundle.
 
 ## How it works
@@ -34,6 +36,27 @@ config entry needed.
 The first version of this mod was a crafted halter item with a lead. That design was cut before
 release and lives on the `halter` branch.
 
+## Portals
+
+Vanilla leaves every tamed animal on the wrong side of a portal. With `FollowThroughPortals` on,
+the boars and hens you have told to follow, within 25 m of you when you step in, arrive beside
+you, nearest first, up to `PortalMax` of them. One you left staying stays.
+
+The game moves you in stages: it counts down, jumps you to the destination, and holds you there
+until the ground has loaded. The old zone is let go of meanwhile, so the animals are not moved
+when the portal fires. Taum remembers which were following and moves them, by their saved state,
+at the moment the game says you have landed. They then follow you again on their own.
+
+Another player standing near the old portal can briefly own an animal, and the game drops a move
+written by someone who does not own it. So Taum checks a moment later that each animal is where it
+was sent, asks its current owner to place it if not, and logs only the animals that arrived.
+
+This is the one place Taum makes following wider rather than narrower, which is why it can be
+turned off. Tamed wolves and lox that follow you are not carried, as a deliberate limit: they use
+the game's own follow command rather than Alt+E, and Taum leaves those animals to vanilla. The
+ore rule is unchanged: the game refuses the portal when you carry metal, so no
+trip starts, and an animal carries nothing.
+
 ## Installation
 
 Requires [BepInEx 5.4.2350](https://thunderstore.io/c/valheim/p/denikson/BepInExPack_Valheim/).
@@ -51,13 +74,15 @@ apply to clients. Without it, Taum runs on its own and only the version check is
 
 ## Configuration
 
-The file is `BepInEx/config/ezomic.valheim.taum.cfg`, section `[Taum]`.
+The file is `BepInEx/config/ezomic.valheim.taum.cfg`, section `[Taum]`, with the two portal settings under `[Portals]`.
 
 | Setting | Default | Effect |
 | --- | --- | --- |
 | `Enabled` | `true` | `false` leaves the plugin loaded and changing nothing: no Alt+E, no hover line. |
 | `Verbose` | `false` | Extra logging to `BepInEx/LogOutput.log`. In 1.0.0 that is one line confirming the patches are live when you spawn. Its comment in the cfg still describes the cut halter item; ignore it. |
 | `FollowKey` | `LeftAlt` | The modifier held with Use to toggle follow/stay. |
+| `FollowThroughPortals` | `true` | Following animals go through a portal with you. Section `[Portals]`. |
+| `PortalMax` | `3` | Most animals per portal trip, nearest first. `0` sends none. Section `[Portals]`. |
 
 `FollowKey` takes one Unity `KeyCode` name and matches it exactly, so `LeftAlt` is the left key
 only. Set `RightAlt` if that is the one you use. Keys are read through the legacy input path,
@@ -84,8 +109,9 @@ host.
 
 ## Compatibility
 
-Taum patches `Tameable.Interact` (prefix) and `Tameable.GetHoverText` (postfix), and nothing
-else. Conflicts to expect:
+Taum patches `Tameable.Interact` (prefix), `Tameable.GetHoverText` (postfix), `TeleportWorld.Teleport`
+(prefix and postfix, to see a portal start) and `Player.UpdateTeleport` (to see you land), and
+nothing else. Conflicts to expect:
 
 - A mod that makes farm animals commandable outright. Taum only acts on creatures the game
   marks non-commandable, so on those animals it becomes inert and the other mod's behaviour
