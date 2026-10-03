@@ -74,8 +74,35 @@ namespace Taum
             var key = TaumConfig.FollowKey.Value.ToString()
                 .Replace("Left", "").Replace("Right", "");
 
-            __result += Localization.instance.Localize(
+            __result += "\n" + State(__instance) + Localization.instance.Localize(
                 "\n[<color=yellow><b>" + key + " + $KEY_Use</b></color>] Follow / stay");
+        }
+
+        /// <summary>
+        /// Which of the two the animal is in now, so the toggle line below it says what a
+        /// press will undo.
+        ///
+        /// Read off the ZDO's own "follow" string, which Tameable.RPC_Command writes on the
+        /// owner (the leader's name, or empty for staying) and which every client receives.
+        /// MonsterAI.GetFollowTarget would be the live object but is set only on the machine
+        /// that owns the animal, so on anyone else's screen it would read "staying" for an
+        /// animal that is following. Nothing is kept here: the line is a view of the game's
+        /// own state and cannot drift from it.
+        /// </summary>
+        internal static string FollowerName(Tameable tameable)
+        {
+            if (!tameable.TryGetComponent(out ZNetView nview) || !nview.IsValid()) return "";
+
+            return nview.GetZDO().GetString(ZDOVars.s_follow, "");
+        }
+
+        private static string State(Tameable tameable)
+        {
+            var leader = FollowerName(tameable);
+            if (string.IsNullOrEmpty(leader)) return "Staying";
+
+            var me = Player.m_localPlayer;
+            return me != null && leader == me.GetPlayerName() ? "Following you" : "Following " + leader;
         }
     }
 }
