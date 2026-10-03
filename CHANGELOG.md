@@ -19,6 +19,14 @@ the mod uses [semantic versioning](https://semver.org).
   `PortalMax` (default 3, nearest first). The ore rule is untouched: the game still refuses the
   portal to you with metal in your pack, and no trip starts then. Not run in game yet.
   Tamed wolves and lox that follow you are not carried, on purpose.
+- **The follow modifier is on Core's Settings page (LHM-51)**, the page in the compendium that lists
+  a player's own settings and rebinds a key by pressing it. Without Core nothing changes. Built, not run
+  in game.
+
+### Changed
+
+- The follow modifier is read through `ZInput` instead of `UnityEngine.Input`, so a mouse button bound
+  from the Settings page, middle mouse included, is seen. Keyboard keys read as before.
 
 ### Fixed
 

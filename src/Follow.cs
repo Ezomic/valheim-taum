@@ -49,7 +49,9 @@ namespace Taum
             // hold repeats while E is down, and alt is vanilla's rename - both stay
             // vanilla's. Only a plain press with the follow modifier down is ours.
             if (hold || alt || !Wants(__instance)) return true;
-            if (!Input.GetKey(TaumConfig.FollowKey.Value)) return true;
+            // ZInput, not UnityEngine.Input: the legacy class does not see every mouse button
+            // here, and Core's settings screen lets a player bind one.
+            if (!ZInput.GetKey(TaumConfig.FollowKey.Value, false)) return true;
 
             __instance.Command(user);
             __result = true;

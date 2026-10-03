@@ -74,6 +74,10 @@ apply to clients. Without it, Taum runs on its own and only the version check is
 
 ## Configuration
 
+With [Core](https://github.com/Ezomic/valheim-core) installed, `FollowKey` is also on the Settings page of the
+compendium, where it is rebound by pressing the key you want. Left Alt is shared with Jafna and Malmr by default,
+and that page says what each of them does with it.
+
 The file is `BepInEx/config/ezomic.valheim.taum.cfg`, section `[Taum]`, with the two portal settings under `[Portals]`.
 
 | Setting | Default | Effect |
