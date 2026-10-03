@@ -11,6 +11,11 @@ the mod uses [semantic versioning](https://semver.org).
   a player's own settings and rebinds a key by pressing it. Without Core nothing changes. Built, not run
   in game.
 
+### Changed
+
+- The follow modifier is read through `ZInput` instead of `UnityEngine.Input`, so a mouse button bound
+  from the Settings page, middle mouse included, is seen. Keyboard keys read as before.
+
 ## [1.0.1] - 2026-09-12
 
 ### Changed
