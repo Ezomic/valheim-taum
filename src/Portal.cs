@@ -75,6 +75,13 @@ namespace Taum
 
         private const string PlaceRpc = "Taum_Place";
 
+        /// <summary>
+        /// How far from the sender a requested spot may be. Put sets animals 2.5 m in front of
+        /// the leader, so this is generous; it exists so the message cannot be used to throw a
+        /// follower of the sender's across the world.
+        /// </summary>
+        private const float PlaceRange = 40f;
+
         private static List<ZDOID> _trip;
         private static float _started;
 
@@ -169,7 +176,14 @@ namespace Taum
             {
                 var zdo = ZDOMan.instance.GetZDO(id);
                 if (zdo == null || !zdo.IsOwner()) return;
-                if (zdo.GetString(ZDOVars.s_follow, "") == "") return;
+                var follows = zdo.GetString(ZDOVars.s_follow, "");
+                if (follows == "") return;
+
+                if (!SenderMayPlace(sender, follows, spot))
+                {
+                    TaumPlugin.LogOnce("Portal: refused a placement request from a peer that is not the animal's leader or asked for a spot far from them.");
+                    return;
+                }
 
                 Place(zdo, spot);
             }
@@ -177,6 +191,33 @@ namespace Taum
             {
                 TaumPlugin.LogOnce("Portal: could not place an animal on request: " + e);
             }
+        }
+
+        /// <summary>
+        /// The sender must be the player the animal follows, found through the player list, which
+        /// every machine has: its character's ZDOID carries the session id of the machine that
+        /// made it, which is the id a routed message arrives with. Players are looked up there
+        /// and not through the loaded ones because the leader has just landed far from the old
+        /// zone, so their Player is usually not loaded on the animal's owner. For the same reason
+        /// their position is known only when it is public or their ZDO has been sent here; when
+        /// neither is true the name check stands alone and the spot cannot be compared.
+        /// </summary>
+        private static bool SenderMayPlace(long sender, string follows, Vector3 spot)
+        {
+            if (ZNet.instance == null) return false;
+
+            foreach (var info in ZNet.instance.GetPlayerList())
+            {
+                if (info.m_characterID == ZDOID.None || info.m_characterID.UserID != sender) continue;
+                if (info.m_name != follows) return false;
+
+                if (info.m_publicPosition) return Vector3.Distance(info.m_position, spot) <= PlaceRange;
+
+                var leader = ZDOMan.instance.GetZDO(info.m_characterID);
+                return leader == null || Vector3.Distance(leader.GetPosition(), spot) <= PlaceRange;
+            }
+
+            return false;
         }
 
         private static List<ZDOID> Followers(Player player)

@@ -83,7 +83,7 @@ The file is `BepInEx/config/ezomic.valheim.taum.cfg`, section `[Taum]`, with the
 | Setting | Default | Effect |
 | --- | --- | --- |
 | `Enabled` | `true` | `false` leaves the plugin loaded and changing nothing: no Alt+E, no hover line. |
-| `Verbose` | `false` | Extra logging to `BepInEx/LogOutput.log`. In 1.0.0 that is one line confirming the patches are live when you spawn. Its comment in the cfg still describes the cut halter item; ignore it. |
+| `Verbose` | `false` | Extra logging to `BepInEx/LogOutput.log`. One line confirming the patches are live when you spawn, and the portal lines: how many following animals were noted for a trip and how many came down beside you. |
 | `FollowKey` | `LeftAlt` | The modifier held with Use to toggle follow/stay. |
 | `FollowThroughPortals` | `true` | Following animals go through a portal with you. Section `[Portals]`. |
 | `PortalMax` | `3` | Most animals per portal trip, nearest first. `0` sends none. Section `[Portals]`. |
@@ -107,15 +107,15 @@ clients without Taum, or on a different version or build, are rejected when they
 server without Core, mixed installs are fine: players without Taum just cannot issue the
 command.
 
-With Core present, the host's `Enabled` and `Verbose` values are applied on connected clients in
-memory, without touching their config files. `FollowKey` is a key and is never taken over by the
+With Core present, the host's `Enabled`, `Verbose`, `FollowThroughPortals` and `PortalMax` values are applied on connected
+clients in memory, without touching their config files. `FollowKey` is a key and is never taken over by the
 host.
 
 ## Compatibility
 
 Taum patches `Tameable.Interact` (prefix), `Tameable.GetHoverText` (postfix), `TeleportWorld.Teleport`
-(prefix and postfix, to see a portal start) and `Player.UpdateTeleport` (to see you land), and
-nothing else. Conflicts to expect:
+(prefix and postfix, to see a portal start) and `Player.UpdateTeleport` (to see you land) and `ZNet.Awake` (postfix, to register the
+`Taum_Place` message), and nothing else. Conflicts to expect:
 
 - A mod that makes farm animals commandable outright. Taum only acts on creatures the game
   marks non-commandable, so on those animals it becomes inert and the other mod's behaviour

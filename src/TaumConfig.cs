@@ -33,7 +33,9 @@ namespace Taum
                 "Off leaves the plugin loaded and changing nothing.");
 
             Verbose = cfg.Bind("Taum", "Verbose", false,
-                "Write each halter put on, taken off and dropped to BepInEx/LogOutput.log.");
+                "Extra logging to BepInEx/LogOutput.log: a line confirming the patches are live "
+                + "when you spawn, and the portal lines (animals noted for a trip, and how many "
+                + "came down beside you).");
 
             FollowKey = cfg.Bind("Taum", "FollowKey", KeyCode.LeftAlt,
                 "Held with E on a tamed boar or hen to toggle follow/stay. Alt because "

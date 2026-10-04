@@ -25,6 +25,11 @@ the mod uses [semantic versioning](https://semver.org).
 
 ### Changed
 
+- The `Taum_Place` message, which moves a following animal for a leader who does not own it, is now
+  checked by the machine that owns the animal. The sender must be the player the animal follows,
+  and the requested spot must be within 40 m of them (checked whenever their position is known
+  there). A refused request is logged once. `Verbose` now describes the portal log lines it also
+  gates. Built, not run in game.
 - The follow modifier is read through `ZInput` instead of `UnityEngine.Input`, so a mouse button bound
   from the Settings page, middle mouse included, is seen. Keyboard keys read as before.
 
