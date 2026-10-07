@@ -3,14 +3,15 @@
 Notable changes to Taum. Format follows [Keep a Changelog](https://keepachangelog.com), and
 the mod uses [semantic versioning](https://semver.org).
 
-## [Unreleased]
+## [1.1.0] - 2026-10-08
 
 ### Added
 
-- The hover on a tamed boar or hen now says whether it is following or staying, above the
-  Alt+E line, so you know what a press will do. It reads the animal's own follow state from the
-  game (the ZDO field vanilla's Command writes), so it is right on a server for everyone, and the
-  mod keeps no copy of it. Not run in game yet.
+- **The hover says whether the animal is following or staying (LHM-49).** A tamed boar or hen
+  shows `Following you`, `Following <name>` or `Staying` above the Alt+E line, so you know what
+  the next press will do. It reads the follow state the game already keeps on the animal, which
+  every client receives, so it is right on a server for everyone and Taum keeps no copy of it.
+  Built, not played in game.
 
 ## [1.0.1] - 2026-09-12
 
