@@ -7,7 +7,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Ezomic"
 name = "Taum"
-versionNumber = "1.0.1"
+versionNumber = "1.1.0"
 description = "Farm animals follow: Alt+E on a tamed boar or hen and it walks with you; Alt+E again and it stays."
 websiteUrl = "https://github.com/Ezomic/valheim-taum"
 containsNsfwContent = false
@@ -35,3 +35,6 @@ target = "CHANGELOG.md"
 [publish]
 repository = "https://thunderstore.io"
 communities = [ "valheim" ]
+
+[publish.categories]
+valheim = [ "mods", "utility", "ai-generated" ]
